@@ -2,7 +2,7 @@
   <div id="app">
     <v-header :seller="seller"></v-header>
     <div class="tab-wrapper">
-      <tab :tabs="tabs" :initialIndex="1"></tab>
+      <tab :tabs="tabs" :initialIndex="0"></tab>
     </div>
   </div>
 </template>
@@ -25,6 +25,33 @@ export default {
   components: {
     VHeader,
     Tab
+  },
+  computed: {
+    tabs() {
+      return [
+        {
+          label: '商品',
+          component: Goods,
+          data: {
+            seller: this.seller
+          }
+        },
+        {
+          label: '评论',
+          component: Ratings,
+          data: {
+            seller: this.seller
+          }
+        },
+        {
+          label: '商家',
+          component: Seller,
+          data: {
+            seller: this.seller
+          }
+        }
+      ]
+    }
   },
   created() {
    this._getSeller()
