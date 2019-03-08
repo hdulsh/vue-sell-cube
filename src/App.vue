@@ -16,7 +16,7 @@ export default {
     }
   },
   components: {
-    VHeader
+    VHeader,
   },
   created() {
    this._getSeller()

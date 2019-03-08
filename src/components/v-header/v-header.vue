@@ -39,10 +39,7 @@
     name: 'v-header',
     props: {
       seller: {
-        type: Object,
-        default() {
-          return {}
-        }
+        type: Object
       }
     },
     methods: {
