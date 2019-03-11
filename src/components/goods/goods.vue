@@ -12,7 +12,8 @@
             direction="vertical"
             :labels="props.labels"
             :txts="barTxts"
-            :current="props.current">
+            :current="props.current"
+          >
             <template slot-scope="props">
               <div class="text">
                 <support-ico
@@ -36,6 +37,7 @@
         >
           <ul>
             <li
+              @click="selectFood(food)"
               v-for="food in good.foods"
               :key="food.name"
               class="food-item"
@@ -83,7 +85,7 @@
   export default {
     name: 'goods',
     props: {
-      data: { //Tab传进来的
+      data: {
         type: Object,
         default() {
           return {}
@@ -133,14 +135,54 @@
       }
     },
     methods: {
-      fetch() {//在Tab里调用
-        getGoods().then((goods) => {
-          this.goods = goods
-        })
+      fetch() {
+        if (!this.fetched) {
+          this.fetched = true
+          getGoods({
+            id: this.seller.id
+          }).then((goods) => {
+            this.goods = goods
+          })
+        }
+      },
+      selectFood(food) {
+        this.selectedFood = food
+        this._showFood()
+        this._showShopCartSticky()
       },
       onAdd(target) {
         this.$refs.shopCart.drop(target)
       },
+      _showFood() {
+        this.foodComp = this.foodComp || this.$createFood({
+          $props: {
+            food: 'selectedFood'
+          },
+          $events: {
+            add: (target) => {
+              this.shopCartStickyComp.drop(target)
+            },
+            leave: () => {
+              this._hideShopCartSticky()
+            }
+          }
+        })
+        this.foodComp.show()
+      },
+      _showShopCartSticky() {
+        this.shopCartStickyComp = this.shopCartStickyComp || this.$createShopCartSticky({
+          $props: {
+            selectFoods: 'selectFoods',
+            deliveryPrice: this.seller.deliveryPrice,
+            minPrice: this.seller.minPrice,
+            fold: true
+          }
+        })
+        this.shopCartStickyComp.show()
+      },
+      _hideShopCartSticky() {
+        this.shopCartStickyComp.hide()
+      }
     },
     components: {
       Bubble,

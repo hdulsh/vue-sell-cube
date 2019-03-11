@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="shopcart">
-      <div class="content">
+      <div class="content" @click="toggleList">
         <div class="content-left">
           <div class="logo-wrapper">
             <div class="logo" :class="{'highlight':totalCount>0}">
@@ -14,7 +14,7 @@
           <div class="price" :class="{'highlight':totalPrice>0}">￥{{totalPrice}}</div>
           <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
         </div>
-        <div class="content-right">
+        <div class="content-right" @click="pay">
           <div class="pay" :class="payClass">
             {{payDesc}}
           </div>
@@ -119,6 +119,29 @@
       }
     },
     methods: {
+      toggleList() {
+        if (this.listFold) {
+          if (!this.totalCount) {
+            return
+          }
+          this.listFold = false
+          this._showShopCartList()
+          this._showShopCartSticky()
+        } else {
+          this.listFold = true
+          this._hideShopCartList()
+        }
+      },
+      pay(e) {
+        if (this.totalPrice < this.minPrice) {
+          return
+        }
+        this.$createDialog({
+          title: '支付',
+          content: `您需要支付${this.totalPrice}元`
+        }).show()
+        e.stopPropagation()
+      },
       drop(el) {
         for (let i = 0; i < this.balls.length; i++) {
           const ball = this.balls[i]
@@ -154,6 +177,54 @@
           el.style.display = 'none'
         }
       },
+      _showShopCartList() {
+        this.shopCartListComp = this.shopCartListComp || this.$createShopCartList({
+          $props: {
+            selectFoods: 'selectFoods'
+          },
+          $events: {
+            leave: () => {
+              this._hideShopCartSticky()
+            },
+            hide: () => {
+              this.listFold = true
+            },
+            add: (el) => {
+              this.shopCartStickyComp.drop(el)
+            }
+          }
+        })
+        this.shopCartListComp.show()
+      },
+      _showShopCartSticky() {
+        this.shopCartStickyComp = this.shopCartStickyComp || this.$createShopCartSticky({
+          $props: {
+            selectFoods: 'selectFoods',
+            deliveryPrice: 'deliveryPrice',
+            minPrice: 'minPrice',
+            fold: 'listFold',
+            list: this.shopCartListComp
+          }
+        })
+        this.shopCartStickyComp.show()
+      },
+      _hideShopCartList() {
+        const list = this.sticky ? this.$parent.list : this.shopCartListComp
+        list.hide && list.hide()
+      },
+      _hideShopCartSticky() {
+        this.shopCartStickyComp.hide()
+      }
+    },
+    watch: {
+      fold(newVal) {
+        this.listFold = newVal
+      },
+      totalCount(count) {
+        if (!this.fold && count === 0) {
+          this._hideShopCartList()
+        }
+      }
     },
     components: {
       Bubble
