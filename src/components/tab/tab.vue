@@ -70,6 +70,9 @@
         }
       }
     },
+    mounted() {
+      this.onChange(this.index)
+    },
     methods: {
       onScroll(pos) {
         const tabBarWidth = this.$refs.tabBar.$el.clientWidth
@@ -79,6 +82,8 @@
       },
       onChange(current) {
         this.index = current
+        const component = this.$refs.component[current]
+        component.fetch && component.fetch() //因为onchange只在滑动的时候调用 所以再加个mounted钩子
       }
     },
     components: {
